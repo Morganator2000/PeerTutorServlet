@@ -45,6 +45,7 @@ public class PeerTutorServlet extends HttpServlet {
             peerTutor.setFirstName(firstName);
             peerTutor.setLastName(lastName);
             String courseCode = request.getParameter("courseCode");
+            String letterGrade = logic.getPeerTutorLetterGradeForCourse(peerTutor, courseCode);
             
             if (!logic.isPeerTutorRegistered(peerTutor)){
                 out.println("<ul>");
@@ -52,61 +53,51 @@ public class PeerTutorServlet extends HttpServlet {
                 out.println("<li>First Name " + peerTutor.getFirstName() + "</li>");
                 out.println("</ul>");
                 out.println("<strong>Error: This person is not registered as a peer tutor.</strong>");
-            }
-            
-            if (!logic.isCourseValid(courseCode)){
+            } else if (!logic.isCourseValid(courseCode)){
                 out.println("<ul>");
                 out.println("<li>Course Code: " + courseCode + "</li>");
                 out.println("</ul>");
                 out.println("<strong>Error: The course is not valid.</strong>");
-            }
-            
-            if (!logic.hasPeerTutorTakenCourse(peerTutor, courseCode)) {
+            } else if (!logic.hasPeerTutorTakenCourse(peerTutor, courseCode)) {
                 out.println("<ul>");
                 out.println("<li>Last Name: " + peerTutor.getLastName() + "</li>");
                 out.println("<li>First Name " + peerTutor.getFirstName() + "</li>");
                 out.println("<li>Course Code: " + courseCode + "</li>");
                 out.println("</ul>");
                 out.println("<strong>Error: The peer tutor has not taken the course.</strong>");
-            }
-            
-            String letterGrade = logic.getPeerTutorLetterGradeForCourse(peerTutor, courseCode);
-            switch (letterGrade) {
-                case "A-", "A", "A+":
-                    break;
-                default:
-                    out.println("<ul>");
+            } else if (!"A-".equals(letterGrade) && !"A".equals(letterGrade) && !"A+".equals(letterGrade) ) {
+                out.println("<ul>");
                 out.println("<li>Last Name: " + peerTutor.getLastName() + "</li>");
                 out.println("<li>First Name " + peerTutor.getFirstName() + "</li>");
                 out.println("<li>Course Code: " + courseCode + "</li>");
                 out.println("</ul>");
                 out.println("<strong>Error: This student received " + letterGrade + " which is not enough to be a peer tutor.</strong>");
-            }
             
-            if (logic.isCourseAlreadyAssignedToPeerTutor(peerTutor, courseCode)) {
+            } else if (logic.isCourseAlreadyAssignedToPeerTutor(peerTutor, courseCode)) {
                 out.println("<ul>");
                 out.println("<li>Last Name: " + peerTutor.getLastName() + "</li>");
                 out.println("<li>First Name " + peerTutor.getFirstName() + "</li>");
                 out.println("<li>Course Code: " + courseCode + "</li>");
                 out.println("</ul>");
                 out.println("<strong>Error: The peer tutor is already assigned to this course</strong>");
-            }
+            } else {
             
-            logic.assignCourseToPeerTutor(peerTutor, courseCode);
-            List<PeerTutor> tutors = logic.getAllPeerTutorsForCourse(courseCode);
-            out.println("<table border=\"1\">");
-            out.println("<tr>");
-            out.println("<td>Tutor ID</td>");
-            out.println("<td>Last Name</td>");
-            out.println("<td>First Name</td>");
-            out.println("</tr>");
-            for(PeerTutor tutor : tutors){
-                out.printf("<tr><td>%d</td><td>%s</td><td>%s</td></tr>",
-                    tutor.getId(), tutor.getLastName(), tutor.getFirstName());
+                logic.assignCourseToPeerTutor(peerTutor, courseCode);
+                List<PeerTutor> tutors = logic.getAllPeerTutorsForCourse(courseCode);
+                out.println("<table border=\"1\">");
+                out.println("<tr>");
+                out.println("<td>Tutor ID</td>");
+                out.println("<td>Last Name</td>");
+                out.println("<td>First Name</td>");
+                out.println("</tr>");
+                for(PeerTutor tutor : tutors){
+                    out.printf("<tr><td>%d</td><td>%s</td><td>%s</td></tr>",
+                        tutor.getId(), tutor.getLastName(), tutor.getFirstName());
+                }
+                out.println("</table>");
+                out.println("</body>");
+                out.println("</html>");
             }
-            out.println("</table>");
-            out.println("</body>");
-            out.println("</html>");
         }
     }
 
